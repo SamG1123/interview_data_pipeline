@@ -45,12 +45,14 @@ def company_key(column):
     return F.trim(company)
 
 
-def run(input_path: str, out_dir: str, rejected_dir: str) -> dict:
-    spark = (
-        SparkSession.builder
-        .appName("interview-question-pipeline")
-        .getOrCreate()
-    )
+def run(input_path: str, out_dir: str, rejected_dir: str, spark = None) -> dict:
+    owns_spark = spark is None
+    if spark is None:
+        spark = (
+            SparkSession.builder
+            .appName("interview-question-pipeline")
+            .getOrCreate()
+            )
 
     try:
         # Read the source without modifying the original CSV.
@@ -214,7 +216,8 @@ def run(input_path: str, out_dir: str, rejected_dir: str) -> dict:
         return summary
 
     finally:
-        spark.stop()
+        if owns_spark:
+            spark.stop()
 
 
 if __name__ == "__main__":
